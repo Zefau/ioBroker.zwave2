@@ -204,10 +204,13 @@ function nodeToNative(node: ZWaveNode): Record<string, any> {
 function nodeToCommon(
 	node: ZWaveNode,
 ): ioBroker.DeviceCommon & { name: string | undefined } {
+	const deviceId = computeDeviceId(node.id);
+	
 	return {
 		name: node.deviceConfig
 			? `${node.deviceConfig.manufacturer} ${node.deviceConfig.label}`
 			: `Node ${padStart(node.id.toString(), 3, "0")}`,
+		statusStates: { onlineId: `${_.adapter.namespace}.${deviceId}.ready` }
 	};
 }
 
