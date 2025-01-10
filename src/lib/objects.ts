@@ -210,7 +210,10 @@ function nodeToCommon(
 		name: node.deviceConfig
 			? `${node.deviceConfig.manufacturer} ${node.deviceConfig.label}`
 			: `Node ${padStart(node.id.toString(), 3, "0")}`,
-		statusStates: { onlineId: `${_.adapter.namespace}.${deviceId}.ready` }
+		statusStates: {
+			onlineId: `${_.adapter.namespace}.${deviceId}.ready`,
+			errorId: `${_.adapter.namespace}.${deviceId}.error`
+		}
 	};
 }
 
@@ -548,6 +551,21 @@ export async function setNodeStatus(
 		native: {},
 	});
 	await _.adapter.setStateAsync(stateId, status, true);
+	
+	const errorId = `${computeDeviceId(nodeId)}.error`;
+	await _.adapter.setObjectNotExistsAsync(errorId, {
+		type: "state",
+		common: {
+			name: "Node error",
+			role: "indicator",
+			type: "boolean",
+			read: true,
+			write: false,
+			def: false
+		},
+		native: {},
+	});
+	await _.adapter.setStateAsync(errorId, status === 'dead', true);
 }
 
 /** Updates the ready state for the given node */
@@ -564,7 +582,7 @@ export async function setNodeReady(
 			type: "boolean",
 			read: true,
 			write: false,
-			def: false,
+			def: false
 		},
 		native: {},
 	});
